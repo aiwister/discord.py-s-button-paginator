@@ -1,7 +1,7 @@
 import discord
 
 class PageButton(discord.ui.View):
-    def __init__(self,emb,styles=[discord.ButtonStyle.blurple,discord.ButtonStyle.blurple,discord.ButtonStyle.danger,discord.ButtonStyle.blurple,discord.ButtonStyle.blurple],args=["⏪","◀️","⏹","▶️","⏩"],ids=["first","back","stop","next","end"],prefix=None,suffix=None):
+    def __init__(self,emb,styles=[discord.ButtonStyle.blurple,discord.ButtonStyle.blurple,discord.ButtonStyle.danger,discord.ButtonStyle.blurple,discord.ButtonStyle.blurple],args=["⏪","◀️","⏹","▶️","⏩"],ids=["first","back","stop","next","end"],prefix="",suffix=""):
         super().__init__()
         if len(emb)>1:
           for style,txt,id in zip(styles,args,ids):
@@ -13,7 +13,7 @@ class PageButton(discord.ui.View):
         self.ids=ids
 
 class Page:
-  def __init__(self,embed,prefix=None,suffix=None):
+  def __init__(self,embed,prefix="",suffix=""):
     self.embed=embed
     self.prefix=prefix
     self.suffix=suffix
