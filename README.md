@@ -15,6 +15,6 @@ If using discord.app_commands,
 from button import Page
 @tree.command()
 async def pagetest(interaction:discord.Interaction):
-  page=Page(embed=[i for i in range(20)],timeout=None,author=ctx.author)
+  page=Page(embed=[i for i in range(20)],timeout=None,author=interaction.user)
   await page.start(interaction)
 ```
