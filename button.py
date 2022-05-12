@@ -1,29 +1,6 @@
 import discord
 import asyncio
 class PageButton(discord.ui.View):
-    def __init__(self,emb,author,styles=[discord.ButtonStyle.blurple,discord.ButtonStyle.blurple,discord.ButtonStyle.danger,discord.ButtonStyle.blurple,discord.ButtonStyle.blurple],args=["⏪","◀️","⏹","▶️","⏩"],ids=["first","back","stop","next","end"],prefix="",suffix="",timeout=180):
-        super().__init__()
-        if len(emb)>1:
-          for style,txt,id in zip(styles,args,ids):
-            self.add_item(HugaButton(emb,author,txt,style,id,prefix,suffix,timeout))
-        if len(emb)==1:
-          self.add_item(HugaButton(emb,author,args[2],styles[2],ids[2],prefix,suffix,timeout))
-        self.emb=emb
-        self.args=args
-        self.ids=ids
-
-class Page:
-  def __init__(self,embed,author,timeout,prefix="",suffix=""):
-    self.embed=embed
-    self.prefix=prefix
-    self.suffix=suffix
-    self.author=author
-    self.timeout=timeout
-    
-  async def start(self,interaction):
-import discord
-import asyncio
-class PageButton(discord.ui.View):
     def __init__(self,emb,author=None,styles=[discord.ButtonStyle.blurple,discord.ButtonStyle.blurple,discord.ButtonStyle.danger,discord.ButtonStyle.blurple,discord.ButtonStyle.blurple],args=["⏪","◀️","⏹","▶️","⏩"],ids=["first","back","stop","next","end"],prefix="",suffix="",timeout=180):
         super().__init__()
         if len(emb)>1:
