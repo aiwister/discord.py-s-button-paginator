@@ -7,7 +7,7 @@ If you are using discord.ext.commands,
 from button import Page
 @bot.command()
 async def pagetest(ctx):
-  page=Page([i for i in range(20)])
+  page=Page(embed=[i for i in range(20)],timeout=None,author=ctx.author)
   await page.start(ctx)
 ```
 If using discord.app_commands,
@@ -15,6 +15,6 @@ If using discord.app_commands,
 from button import Page
 @tree.command()
 async def pagetest(interaction:discord.Interaction):
-  page=Page([i for i in range(20)])
+  page=Page(embed=[i for i in range(20)],timeout=None,author=ctx.author)
   await page.start(interaction)
 ```
