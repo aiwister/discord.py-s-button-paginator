@@ -12,7 +12,7 @@ class PageButton(discord.ui.View):
         self.args=args
         self.ids=ids
 
-class Pager:
+class Page:
   def __init__(self,embed,author,timeout,prefix="",suffix=""):
     self.embed=embed
     self.prefix=prefix
