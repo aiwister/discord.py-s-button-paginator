@@ -23,10 +23,10 @@ class Pag:
   async def start(self,interaction):
     global pager
     if isinstance(interaction,discord.Interaction):
-      await interaction.response.send_message(embed=discord.Embed(description=f"{self.prefix}{self.embed[0]}{self.suffix}"),view=PageButton(emb=self.embed,author=self.author,prefix=self.prefix,suffix=self.suffix))
+      msg=await interaction.response.send_message(embed=discord.Embed(description=f"{self.prefix}{self.embed[0]}{self.suffix}"),view=PageButton(emb=self.embed,author=self.author,prefix=self.prefix,suffix=self.suffix))
     if isinstance(interaction,discord.ext.commands.Context):
       msg=await interaction.send(embed=discord.Embed(description=f"{self.prefix}{self.embed[0]}{self.suffix}"),view=PageButton(emb=self.embed,author=self.author,prefix=self.prefix,suffix=self.suffix))
-      pager[str(msg.id)]=0
+    pager[str(msg.id)]=0
       
 class HugaButton(discord.ui.Button):
     def __init__(self,emb,author,txt,disable,style,id,prefix,suffix):
