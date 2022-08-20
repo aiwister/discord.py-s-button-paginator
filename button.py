@@ -1,60 +1,83 @@
 import discord
 import asyncio
-pager={}
-
-class PageButton(discord.ui.View):
-    def __init__(self,emb,author,disableds=[True,True,False,False,False],styles=[discord.ButtonStyle.blurple,discord.ButtonStyle.blurple,discord.ButtonStyle.danger,discord.ButtonStyle.blurple,discord.ButtonStyle.blurple],args=["⏪","◀️","⏹","▶️","⏩"],ids=["first","-1","stop","1","end"],prefix="",suffix=""):
-        super().__init__()
-        if len(emb)>1:
-          for disable,style,txt,id in zip(disableds,styles,args,ids):
-            self.add_item(HugaButton(emb,author,txt,disable,style,id,prefix,suffix))
-        if len(emb)==1:
-          self.add_item(HugaButton(emb,author,args[2],styles[2],ids[2],prefix,suffix))
-        self.emb=emb
-        self.args=args
-        self.ids=ids
-
-class Pag:
-  def __init__(self,embed,author,prefix="",suffix=""):
-    self.embed=embed
-    self.prefix=prefix
-    self.suffix=suffix
-    self.author=author 
-  async def start(self,interaction):
-    global pager
-    if isinstance(interaction,discord.Interaction):
-      msg=await interaction.response.send_message(embed=discord.Embed(description=f"{self.prefix}{self.embed[0]}{self.suffix}"),view=PageButton(emb=self.embed,author=self.author,prefix=self.prefix,suffix=self.suffix))
-    if isinstance(interaction,discord.ext.commands.Context):
-      msg=await interaction.send(embed=discord.Embed(description=f"{self.prefix}{self.embed[0]}{self.suffix}"),view=PageButton(emb=self.embed,author=self.author,prefix=self.prefix,suffix=self.suffix))
-    pager[str(msg.id)]=0
-      
-class HugaButton(discord.ui.Button):
-    def __init__(self,emb,author,txt,disable,style,id,prefix,suffix):
-        self.emb=emb
+from discord.ext import commands
+class Paginator:
+    def __init__(self,title="",entries=[],author="",prefix="",suffix="",color=discord.Colour.blue()):
+        self.title=title
+        self.entries=entries
+        self.author=author
         self.prefix=prefix
         self.suffix=suffix
-        self.author=author
-        self.disable=disable
-        super().__init__(label=txt,style=style,custom_id=id,disabled=disable)
-
-
-    async def callback(self,interaction):
-      global pager
-      if self.author==interaction.user:
-       if self.custom_id=="1" or self.custom_id=="-1":
-        pager[str(interaction.message.id)]+=int(self.custom_id)
-        if pager[str(interaction.message.id)]>0 and pager[str(interaction.message.id)]<len(self.emb)-1:
-         await interaction.message.edit(view=PageButton(emb=self.emb,author=self.author,disableds=[False,False,False,False,False],prefix=self.prefix,suffix=self.suffix))
-        if pager[str(interaction.message.id)]==0:
-         await interaction.message.edit(view=PageButton(emb=self.emb,author=self.author,disableds=[True,True,False,False,False],prefix=self.prefix,suffix=self.suffix))
-        if pager[str(interaction.message.id)]==len(self.emb)-1:
-         await interaction.message.edit(view=PageButton(emb=self.emb,author=self.author,disableds=[False,False,False,True,True],prefix=self.prefix,suffix=self.suffix))
-       if self.custom_id=="first":
-        pager[str(interaction.message.id)]=0
-        await interaction.message.edit(view=PageButton(emb=self.emb,author=self.author,disableds=[True,True,False,False,False],prefix=self.prefix,suffix=self.suffix))
-       if self.custom_id=="end":
-         pager[str(interaction.message.id)]=len(self.emb)-1
-         await interaction.message.edit(view=PageButton(emb=self.emb,author=self.author,disableds=[False,False,False,True,True],prefix=self.prefix,suffix=self.suffix))
-       await interaction.response.edit_message(embed=discord.Embed(description=f"{self.prefix}{self.emb[pager[str(interaction.message.id)]]}{self.suffix}"))
-       if self.custom_id=="stop":
-            await interaction.response.edit_message(view=None)
+        self.color=color
+        self.pages=[]
+        self.current=0
+    async def start(self,ctx):
+        current=self.current
+        class PageButton(discord.ui.View):
+            def __init__(self,title,entries,author,
+                  prefix="",
+                  suffix="",
+                  color=discord.Colour.blue(),
+                  disableds=[True,True,False,False,False],
+                  styles=[discord.ButtonStyle.blurple,discord.ButtonStyle.blurple,discord.ButtonStyle.danger,discord.ButtonStyle.blurple,discord.ButtonStyle.blurple],
+                  args=["⏪","◀️","⏹","▶️","⏩"],
+                  ids=["first","back","stop","next","end"]):
+                super().__init__()
+                if len(entries)>1:
+                    for disable,style,txt,id in zip(disableds,styles,args,ids):
+                        self.add_item(PaginateButton(title,entries,author,prefix,suffix,color,txt,disable,style,id))
+                if len(entries)==1:
+                    self.add_item(PaginateButton(title,entries,author,prefix,suffix,color,args[2],disableds[2],styles[2],ids[2]))
+        class PaginateButton(discord.ui.Button):
+            def __init__(self,title,entries,author,prefix,suffix,color,txt,disable,style,id):
+                self.title=title
+                self.entries=entries
+                self.author=author
+                self.prefix=prefix
+                self.suffix=suffix
+                self.color=color
+                super().__init__(label=txt,style=style,custom_id=id,disabled=disable)
+            async def callback(self,interaction:discord.Interaction):
+                nonlocal current
+                if self.author==interaction.user:
+                    if self.custom_id=="next":
+                        current+=1
+                        if current<len(self.entries)-1:
+                            await interaction.response.edit_message(
+                    embed=discord.Embed(title=self.title,description=self.prefix+self.entries[current]+self.suffix,color=self.color),
+                    view=PageButton(self.title,self.entries,self.author,disableds=[False,False,False,False,False]))
+                        if current==len(self.entries)-1:
+                            await interaction.response.edit_message(
+                    embed=discord.Embed(title=self.title,description=self.prefix+self.entries[current]+self.suffix,color=self.color))
+                            await interaction.message.edit(
+                    view=PageButton(self.title,self.entries,self.author,disableds=[False,False,False,True,True]))
+                    if self.custom_id=="back":
+                        current-=1
+                        if current>0:
+                            await interaction.response.edit_message(
+                    embed=discord.Embed(title=self.title,description=self.prefix+self.entries[current]+self.suffix,color=self.color),
+                    view=PageButton(self.title,self.entries,self.author,disableds=[False,False,False,False,False])
+                            )
+                        if current==0:
+                            await interaction.response.edit_message(
+                    embed=discord.Embed(title=self.title,description=self.prefix+self.entries[current]+self.suffix,color=self.color))
+                            await interaction.message.edit(
+                    view=PageButton(self.title,self.entries,self.author,disableds=[True,True,False,False,False]))
+                    if self.custom_id=="first":
+                        current=0
+                        await interaction.response.edit_message(
+                    embed=discord.Embed(title=self.title,description=self.prefix+self.entries[current]+self.suffix,color=self.color),
+                    view=PageButton(self.title,self.entries,self.author,disableds=[True,True,False,False,False]))
+                    if self.custom_id=="end":
+                        current=len(self.entries)-1
+                        await interaction.response.edit_message(
+                    embed=discord.Embed(title=self.title,description=self.prefix+self.entries[current]+self.suffix,color=self.color),
+                    view=PageButton(self.title,self.entries,self.author,disableds=[False,False,False,True,True]))
+                    if self.custom_id=="stop":
+                        await interaction.response.edit_message(
+                    view=None)
+        embed=discord.Embed(title=self.title,description=self.prefix+self.entries[0]+self.suffix)
+        if isinstance(ctx,commands.Context):
+            await ctx.send(embed=embed,view=PageButton(self.title,self.entries,self.author,self.prefix,self.suffix,self.color))
+        if isinstance(ctx,discord.Interaction):
+            await ctx.response.send_message(embed=embed,view=PageButton(self.title,self.entries,self.author,self.prefix,self.suffix,self.color))
